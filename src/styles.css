@@ -142,21 +142,19 @@ h2 {
 .button-delete { background-color: #dc3545; }
 .button-delete:hover { background-color: #c82333; }
 
-/* Responsive Design */
-@media (max-width: 600px) {
-  .container {
-    padding: 10px;
-  }
+/* Enhanced responsiveness and UI polish */
 
-  .form {
-    padding: 15px;
-  }
 
-  .card {
-    padding: 10px;
+@media (max-width: 640px) {
+  .max-w-4xl {
+    max-width: 100%;
+    padding: 0 1rem;
   }
-
-  .pagination button {
-    padding: 8px 12px;
+  .max-w-md {
+    max-width: 100%;
+  }
+  button {
+    width: 100%;
+    margin-top: 0.5rem;
   }
 }

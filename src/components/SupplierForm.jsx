@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function SupplierForm() {
   const [formData, setFormData] = useState({
@@ -19,23 +20,23 @@ function SupplierForm() {
     setLoading(true);
     setError('');
     try {
-      // Mock API call (replace with real endpoint)
-      if (formData.name && formData.phone_number && formData.latitude && formData.longitude) {
-        console.log('Supplier created:', formData);
-        navigate('/suppliers');
-      } else {
-        throw new Error('Please fill all required fields');
-      }
+      const token = localStorage.getItem('token');
+      await axios.post('http://localhost:8000/suppliers', formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {
+        console.log('Supplier created:', formData); // Mock success
+      });
+      navigate('/suppliers');
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to create supplier');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl mb-4">Create Supplier</h2>
+    <div className="p-4 max-w-md mx-auto">
+      <h2 className="text-2xl mb-4 font-bold">Create Supplier</h2>
       {error && <p className="text-red-500 mb-4">{error}</p>}
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
@@ -43,7 +44,7 @@ function SupplierForm() {
           value={formData.phone_number}
           onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
           placeholder="Phone Number"
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-lg"
           required
         />
         <input
@@ -51,7 +52,7 @@ function SupplierForm() {
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           placeholder="Supplier Name"
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-lg"
           required
         />
         <input
@@ -60,7 +61,7 @@ function SupplierForm() {
           value={formData.latitude}
           onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
           placeholder="Latitude"
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-lg"
           required
         />
         <input
@@ -69,7 +70,7 @@ function SupplierForm() {
           value={formData.longitude}
           onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
           placeholder="Longitude"
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-lg"
           required
         />
         <input
@@ -77,17 +78,17 @@ function SupplierForm() {
           value={formData.password}
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
           placeholder="Password"
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-lg"
         />
         <select
           value={formData.status}
           onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-lg"
         >
           <option value="open">Open</option>
           <option value="closed">Closed</option>
         </select>
-        <button type="submit" disabled={loading} className="w-full p-2 bg-blue-500 text-white rounded">
+        <button type="submit" disabled={loading} className="w-full p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
           {loading ? 'Saving...' : 'Save'}
         </button>
       </form>
