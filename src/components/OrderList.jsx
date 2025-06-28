@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 
 function OrderList() {
   const [orders, setOrders] = useState([]);
@@ -14,25 +14,18 @@ function OrderList() {
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`http://localhost:8000/orders?skip=${(page - 1) * 10}&limit=10`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }).catch(() => ({
-          data: [
-            { id: 1, type: 'Sand', volume: 50, location: 'Site A', status: 'pending' },
-            { id: 2, type: 'Gravel', volume: 30, location: 'Site B', status: 'in_progress' },
-          ],
-        }));
-        setOrders(response.data);
+        const response = await api.get(`suppliers/orders-history/?skip=${(page - 1) * 10}&limit=10`);
+        setOrders(response.data.results || []); // Adjust based on response structure
       } catch (err) {
         console.error('Error fetching orders:', err);
+        setOrders([]);
       } finally {
         setLoading(false);
       }
     };
     fetchOrders();
 
-    wsRef.current = new WebSocket('ws://localhost:8000/ws/customer/user1');
+    wsRef.current = new WebSocket('wss://katlavan24.uz/api/v1/ws/customer/user1'); // Adjusted WebSocket URL
     wsRef.current.onopen = () => console.log('WebSocket connected');
     wsRef.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -73,11 +66,11 @@ function OrderList() {
             onClick={() => handleOrderClick(order.id)}
           >
             <p>Order ID: {order.id}</p>
-            <p>Type: {order.type}</p>
-            <p>Volume: {order.volume} tons</p>
-            <p>Location: {order.location}</p>
+            <p>Type: {order.material_type || 'Unknown'}</p>
+            <p>Volume: {order.volume || 0} tons</p>
+            <p>Location: {order.location || 'N/A'}</p>
             <span className={`px-2 py-1 rounded ${getStatusClass(order.status)}`}>
-              {order.status}
+              {order.status || 'pending'}
             </span>
           </div>
         ))}

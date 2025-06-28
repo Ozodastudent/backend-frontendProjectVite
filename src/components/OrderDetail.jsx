@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 
 function OrderDetail() {
   const { id } = useParams();
@@ -12,21 +12,8 @@ function OrderDetail() {
     const fetchOrder = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`http://localhost:8000/orders/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }).catch(() => ({
-          data: {
-            id: parseInt(id),
-            type: 'Sand',
-            volume: 50,
-            location: 'Site A',
-            status: 'pending',
-            driver: 'Driver X',
-            supplier: 'Supplier A',
-          },
-        }));
-        setOrder(response.data);
+        const response = await api.get(`suppliers/orders-history/${id}/`); // Adjusted endpoint
+        setOrder(response.data); // Adjust based on response structure
       } catch (err) {
         console.error('Error fetching order:', err);
         navigate('/orders');
@@ -44,10 +31,10 @@ function OrderDetail() {
     <div className="p-4 max-w-4xl mx-auto">
       <h2 className="text-2xl mb-4 font-bold">Order Detail #{order.id}</h2>
       <div className="bg-white p-6 rounded-lg shadow">
-        <p><strong>Type:</strong> {order.type}</p>
-        <p><strong>Volume:</strong> {order.volume} tons</p>
-        <p><strong>Location:</strong> {order.location}</p>
-        <p><strong>Status:</strong> <span className={`px-2 py-1 rounded ${getStatusClass(order.status)}`}>{order.status}</span></p>
+        <p><strong>Type:</strong> {order.material_type || 'Unknown'}</p>
+        <p><strong>Volume:</strong> {order.volume || 0} tons</p>
+        <p><strong>Location:</strong> {order.location || 'N/A'}</p>
+        <p><strong>Status:</strong> <span className={`px-2 py-1 rounded ${getStatusClass(order.status)}`}>{order.status || 'pending'}</span></p>
         <p><strong>Driver:</strong> {order.driver || 'Not assigned'}</p>
         <p><strong>Supplier:</strong> {order.supplier || 'Not assigned'}</p>
         <button

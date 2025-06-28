@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 
 function SupplierForm() {
   const [formData, setFormData] = useState({
-    phone_number: '',
-    name: '',
-    latitude: '',
-    longitude: '',
-    password: '',
-    status: 'open',
+    shop_name: '',
+    shop_status: true,
+    location_latitude: '',
+    location_longitude: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,15 +18,14 @@ function SupplierForm() {
     setLoading(true);
     setError('');
     try {
-      const token = localStorage.getItem('token');
-      await axios.post('http://localhost:8000/suppliers', formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      }).catch(() => {
-        console.log('Supplier created:', formData); // Mock success
+      await api.post('suppliers/', {
+        ...formData,
+        user: 0, // Placeholder; replace with authenticated user ID if needed
       });
       navigate('/suppliers');
     } catch (err) {
-      setError(err.message || 'Failed to create supplier');
+      console.error('Error creating supplier:', err);
+      setError('Failed to create supplier. Only moderators can create suppliers.');
     } finally {
       setLoading(false);
     }
@@ -41,25 +38,25 @@ function SupplierForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
-          value={formData.phone_number}
-          onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
-          placeholder="Phone Number"
+          value={formData.shop_name}
+          onChange={(e) => setFormData({ ...formData, shop_name: e.target.value })}
+          placeholder="Shop Name"
           className="w-full p-2 border rounded-lg"
           required
         />
-        <input
-          type="text"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          placeholder="Supplier Name"
+        <select
+          value={formData.shop_status}
+          onChange={(e) => setFormData({ ...formData, shop_status: e.target.value === 'true' })}
           className="w-full p-2 border rounded-lg"
-          required
-        />
+        >
+          <option value="true">Open</option>
+          <option value="false">Closed</option>
+        </select>
         <input
           type="number"
           step="0.000001"
-          value={formData.latitude}
-          onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+          value={formData.location_latitude}
+          onChange={(e) => setFormData({ ...formData, location_latitude: e.target.value })}
           placeholder="Latitude"
           className="w-full p-2 border rounded-lg"
           required
@@ -67,27 +64,12 @@ function SupplierForm() {
         <input
           type="number"
           step="0.000001"
-          value={formData.longitude}
-          onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+          value={formData.location_longitude}
+          onChange={(e) => setFormData({ ...formData, location_longitude: e.target.value })}
           placeholder="Longitude"
           className="w-full p-2 border rounded-lg"
           required
         />
-        <input
-          type="password"
-          value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          placeholder="Password"
-          className="w-full p-2 border rounded-lg"
-        />
-        <select
-          value={formData.status}
-          onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-          className="w-full p-2 border rounded-lg"
-        >
-          <option value="open">Open</option>
-          <option value="closed">Closed</option>
-        </select>
         <button type="submit" disabled={loading} className="w-full p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
           {loading ? 'Saving...' : 'Save'}
         </button>

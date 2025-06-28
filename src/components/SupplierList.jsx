@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 
 function SupplierList() {
   const [suppliers, setSuppliers] = useState([]);
@@ -13,34 +13,23 @@ function SupplierList() {
     const fetchSuppliers = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`http://localhost:8000/suppliers?skip=${(page - 1) * 10}&limit=10`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }).catch(() => ({
-          data: [
-            { id: 1, name: 'Supplier A', phone_number: '+998901234567', latitude: 41.3, longitude: 69.2, status: 'open' },
-            { id: 2, name: 'Supplier B', phone_number: '+998901234568', latitude: 41.4, longitude: 69.3, status: 'closed' },
-          ],
-        }));
-        setSuppliers(response.data);
+        const response = await api.get('suppliers/');
+        setSuppliers(response.data || []); // Adjust based on response structure
       } catch (err) {
         console.error('Error fetching suppliers:', err);
+        setSuppliers([]);
       } finally {
         setLoading(false);
       }
     };
     fetchSuppliers();
-  }, [page]);
+  }, [page]); // Page change triggers refresh
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this supplier?')) {
       try {
-        const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:8000/suppliers/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }).catch(() => {
-          setSuppliers(suppliers.filter((s) => s.id !== id)); // Mock delete
-        });
+        await api.delete(`suppliers/${id}/`);
+        setSuppliers(suppliers.filter((s) => s.id !== id));
       } catch (err) {
         console.error('Error deleting supplier:', err);
       }
@@ -48,7 +37,7 @@ function SupplierList() {
   };
 
   const filteredSuppliers = suppliers.filter((s) =>
-    s.name.toLowerCase().includes(search.toLowerCase())
+    s.shop_name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -65,12 +54,9 @@ function SupplierList() {
       <div className="space-y-4">
         {filteredSuppliers.map((supplier) => (
           <div key={supplier.id} className="p-4 bg-white rounded-lg shadow">
-            <p>Name: {supplier.name}</p>
-            <p>Phone: {supplier.phone_number}</p>
-            <p>Location: ({supplier.latitude}, {supplier.longitude})</p>
-            <span className={`px-2 py-1 rounded ${supplier.status === 'open' ? 'bg-green-200' : 'bg-red-200'}`}>
-              {supplier.status}
-            </span>
+            <p>Name: {supplier.shop_name}</p>
+            <p>Status: {supplier.shop_status ? 'Open' : 'Closed'}</p>
+            <p>Location: ({supplier.location_latitude}, {supplier.location_longitude})</p>
             <button
               onClick={() => navigate(`/suppliers/edit/${supplier.id}`)}
               className="ml-2 p-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
